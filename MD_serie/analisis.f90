@@ -26,6 +26,6 @@ function P_compute(N,L,R,Forces,temperatura) result(Presion)
         Presion = Presion + dot_product(Forces(i,:),R(i,:))
     enddo
     !Acabem de calcular sa pressio
-    Presion = (Presion/3.0d0 + dble(N)*temperatura)/L**3.0d0
+    Presion = (Presion/(N*3.0d0) + dble(N)*temperatura)/L**3.0d0
 end function
 end module

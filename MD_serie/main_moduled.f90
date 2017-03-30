@@ -1,6 +1,7 @@
 program md
 !include 'mpif.h'
 use analisis
+!use search_arguments
 !use integrate_verlet
 !use integrate_euler
 !use forces
@@ -12,7 +13,7 @@ real(8), dimension(:,:), allocatable:: positions,accel,velocities
 !datos de entrada de prueba
 deltat=0.0032
 Nsteps=10000
-N=256
+N = get_int_arg(1,int(256,8))
 dimnsion=3
 BoxSize=6.1984
 mass=1.0
@@ -40,11 +41,9 @@ close (10)
 do step=1,Nsteps
  temperatura = T_compute(N,velocities)
  pression = P_compute(N,BoxSize,positions,accel,temperatura)
- print*,pression,temperatura
-
 enddo
 
 contains
 !subrutinas
-
+include 'get_int.inc'
 end program md

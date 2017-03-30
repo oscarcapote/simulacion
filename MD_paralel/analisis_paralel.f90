@@ -6,10 +6,10 @@ contains
 
 function P_compute_paralel(N,L,R,Forces,temperatura,rank,numproc,ierror,MASTER) result(Presion)
     !Calcula sa presio donada ses coordenades i ses forces
-    integer(4) :: N,i
-    real(4),dimension(N,3) :: Forces
-    real(4),dimension(N,3) :: R
-    real(4) :: Presion,L,Presion_parcial,temperatura!,presion
+    integer(8) :: N,i
+    real(8),dimension(N,3) :: Forces
+    real(8),dimension(N,3) :: R
+    real(8) :: Presion,L,Presion_parcial,temperatura!,presion
     !Declarem variables MPI
     integer :: comm,rank,numproc,ierror,MASTER
     !integer :: MASTER
@@ -33,7 +33,7 @@ function P_compute_paralel(N,L,R,Forces,temperatura,rank,numproc,ierror,MASTER) 
         enddo
     endif
     !Sumo P parciales al MASTER
-    call MPI_REDUCE(Presion_parcial,Presion,1,MPI_FLOAT,MPI_SUM,MASTER,MPI_COMM_WORLD,ierror)
+    call MPI_REDUCE(Presion_parcial,Presion,1,MPI_DOUBLE_PRECISION,MPI_SUM,MASTER,MPI_COMM_WORLD,ierror)
     
     !Master acaba de calcular sa temperatura
     if(rank==MASTER)then
@@ -44,21 +44,23 @@ end function
 
 function T_compute_paralel(N,Velocitats,rank,numproc,ierror,MASTER) result(temperatura)
     !Funcio que calcula sa temperatura paralelament
-    integer(4) :: N!Nombre particules!!
-    real(4),dimension(N,3) :: Velocitats!Matriu de velocitats
-    real(4) :: temperatura,temperatura_parcial
+    integer(8) :: N!Nombre particules!!
+    real(8),dimension(N,3) :: Velocitats!Matriu de velocitats
+    real(8) :: temperatura,temperatura_parcial
     !Declarem variables MPI
     integer :: rank,numproc,ierror,MASTER
-    integer(4) :: interval_index
+    integer(4) :: interval_index,from_i,to_i
     
     !Paralelitzem suma de quadrats de Velocitats
     interval_index = N/numproc
+    from_i = (rank)*interval_index+1
+    to_i = (rank+1)*interval_index
     if (rank/=numproc-1)then
-        temperatura_parcial = sum(Velocitats((rank)*interval_index+1:(rank+1)*interval_index,:)**2)
+        temperatura_parcial = sum(Velocitats(from_i:to_i,:)**2)
     else
-        temperatura_parcial = sum(Velocitats((rank)*interval_index+1:,:)**2)
+        temperatura_parcial = sum(Velocitats(from_i:,:)**2)
     endif
-    call MPI_REDUCE(temperatura_parcial,temperatura,1,MPI_REAL,MPI_SUM,MASTER,MPI_COMM_WORLD,ierror)
+    call MPI_REDUCE(temperatura_parcial,temperatura,1,MPI_DOUBLE_PRECISION,MPI_SUM,MASTER,MPI_COMM_WORLD,ierror)
     
     !Master acaba de calcular sa temperatura
     if(rank==MASTER)then
